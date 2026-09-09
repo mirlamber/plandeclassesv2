@@ -332,7 +332,10 @@ function addContextMenu(element){
 
         // Afficher les boutons pour les bureaux/éléments
         document.getElementById("deleteElement").style.display = "block";
-        document.getElementById("changeDeskColor").style.display = "block";
+        document.getElementById("colorRed").style.display = "block";
+        document.getElementById("colorGreen").style.display = "block";
+        document.getElementById("colorYellow").style.display = "block";
+        document.getElementById("colorReset").style.display = "block";
 
         if (element.classList.contains("studentDesk")) {
             document.getElementById("toggleDeskText").style.display = "block";
@@ -639,7 +642,7 @@ function startDragStudent(e) {
     studentOffsetX = e.clientX - rect.left;
     studentOffsetY = e.clientY - rect.top;
 
-    // Espaceur pour conserver la place dans la zone non affecté
+    // Si l'étiquette provient de la zone "Non affecté", on laisse un espaceur invisible
     if (draggedStudent.parentNode && draggedStudent.parentNode.id === "unassignedZone") {
         dragPlaceholder = document.createElement("div");
         dragPlaceholder.className = "student-label-placeholder";
@@ -649,14 +652,8 @@ function startDragStudent(e) {
     }
 
     draggedStudent.style.width = rect.width + "px";
-    
-    // 📱 Passage en "fixed" pour éliminer le décalage sur iPad/Safari
-    draggedStudent.style.position = "fixed"; 
+    draggedStudent.style.position = "absolute";
     draggedStudent.style.zIndex = 1000;
-
-    // Alignement immédiat sous le pointeur
-    draggedStudent.style.left = (e.clientX - studentOffsetX) + "px";
-    draggedStudent.style.top = (e.clientY - studentOffsetY) + "px";
 
     document.addEventListener("mousemove", moveStudent);
     document.addEventListener("mouseup", dropStudent);
@@ -1262,7 +1259,10 @@ function setupStudentLabelEvents(label) {
         document.getElementById("deleteElement").style.display = "none";
         document.getElementById("toggleDeskText").style.display = "none";
         document.getElementById("changeDeskColor").style.display = "none"; // 👈 À rajouter dans le bloc contextmenu
-
+        document.getElementById("colorRed").style.display = "none";
+        document.getElementById("colorGreen").style.display = "none";
+        document.getElementById("colorYellow").style.display = "none";
+        document.getElementById("colorReset").style.display = "none";
         // Afficher uniquement les boutons de l'étiquette
         document.getElementById("editStudentLabel").style.display = "block";
         document.getElementById("deleteStudentLabel").style.display = "block";
@@ -1274,21 +1274,47 @@ function setupStudentLabelEvents(label) {
     });
 }
 
-// Déclencher le sélecteur de couleur au clic sur le bouton
-document.getElementById("changeDeskColor").onclick = function() {
-    if (!currentElement) return;
 
-    let picker = document.getElementById("deskColorPicker");
-    picker.click(); // Ouvre la palette de couleurs du navigateur
+// Appliquer les couleurs prédéfinies
+document.getElementById("colorRed").onclick = function() {
+    if (currentElement) currentElement.style.backgroundColor = "#ffab91"; // Rouge doux
     contextMenu.style.display = "none";
 };
 
-// Appliquer la couleur sélectionnée sur l'élément/bureau
-document.getElementById("deskColorPicker").oninput = function() {
-    if (currentElement) {
-        currentElement.style.backgroundColor = this.value;
-    }
+document.getElementById("colorGreen").onclick = function() {
+    if (currentElement) currentElement.style.backgroundColor = "#a5d6a7"; // Vert doux
+    contextMenu.style.display = "none";
 };
+
+document.getElementById("colorYellow").onclick = function() {
+    if (currentElement) currentElement.style.backgroundColor = "#fff59d"; // Jaune doux
+    contextMenu.style.display = "none";
+};
+
+document.getElementById("colorReset").onclick = function() {
+    if (currentElement) currentElement.style.backgroundColor = ""; // Réinitialise la couleur CSS de base
+    contextMenu.style.display = "none";
+};
+
+// 🎨 Événements des boutons de couleurs (SÉCURISÉ)
+const colorMap = {
+    colorRed: "#ffab91",
+    colorGreen: "#a5d6a7",
+    colorYellow: "#fff59d",
+    colorReset: ""
+};
+
+Object.keys(colorMap).forEach(id => {
+    let btn = document.getElementById(id);
+    if (btn) {
+        btn.onclick = function() {
+            if (currentElement) {
+                currentElement.style.backgroundColor = colorMap[id];
+            }
+            contextMenu.style.display = "none";
+        };
+    }
+});
 
 // ⚠️ RECOMMANDATION DE SÉCURITÉ POUR VOS FONCTIONS EXISTANTES :
 // Pour que la rotation reste active quand vous ajoutez des bureaux ou importez un JSON,
