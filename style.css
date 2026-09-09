@@ -1,0 +1,409 @@
+body{
+    font-family: Arial, sans-serif;
+    text-align:center;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.toolbar {
+    margin: 20px auto;
+    display: flex;
+    flex-direction: column; /* 👈 Force l'affichage l'un sous l'autre */
+    align-items: center;
+    gap: 10px; /* Espace entre les deux lignes */
+}
+
+.toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px; /* Espace entre les boutons d'une même ligne */
+}
+
+
+
+
+button{
+    padding:10px;
+    margin:5px;
+    cursor:pointer;
+}
+
+
+.workspace{
+    display:flex;
+    gap:20px;
+    align-items:stretch;
+    justify-content:center;
+    margin:0 auto;
+}
+
+
+/* salle */
+
+#classroom{
+    position:relative;
+    width:900px;
+    height:600px;
+    border:3px solid black;
+
+}
+
+
+
+/* zone élèves */
+#studentsInput::placeholder {
+    color: #cccccc; /* Gris clair */
+    font-style: italic;
+}
+
+#unassignedPanel {
+    width: 240px; /* 👈 Élargi pour que les 2 colonnes respirent bien (avant: 180px) */
+    height: 600px;
+    border: 3px solid #555;
+    background: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+}
+
+#unassignedZone {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    
+    /* 👈 NOUVEAU : Affichage en 2 colonnes */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Crée 2 colonnes de taille identique */
+    gap: 8px; /* Gère l'espacement entre les étiquettes automatiquement */
+    align-content: start; /* Garde tous les élèves en haut s'il y en a peu */
+}
+
+
+
+#unassignedPanel h2{
+    text-align:center;
+    margin:10px;
+    font-size:18px;
+
+}
+
+
+.element{
+
+    position:absolute;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:8px;
+    cursor:grab;
+    user-select:none;
+    pointer-events: auto;
+
+}
+
+
+
+.teacherBoard{
+
+    width:250px;
+    height:30px;
+
+    background:#333;
+    color:white;
+
+    left:325px;
+    top:30px;
+
+}
+
+
+
+.teacherDesk{
+
+    width:80px;
+    height:50px;
+
+    background:#d88;
+
+    left:410px;
+    top:90px;
+
+}
+
+
+
+.studentDesk{
+
+    width:80px;
+    height:50px;
+
+    background:#8dc;
+
+}
+
+
+
+.studentDesk:nth-child(1){
+    left:200px;
+    top:200px;
+}
+
+
+.studentDesk:nth-child(2){
+    left:320px;
+    top:200px;
+}
+
+
+.studentDesk:nth-child(3){
+    left:200px;
+    top:300px;
+}
+
+
+.studentDesk:nth-child(4){
+    left:320px;
+    top:300px;
+}
+
+
+
+#trash{
+
+    width:120px;
+    height:40px;
+
+    background:#eee;
+
+    border:3px dashed red;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    margin:0;
+
+    cursor:pointer;
+}
+
+.rotation-handle{
+
+    position:absolute;
+
+    width:14px;
+    height:14px;
+
+    background:white;
+
+    border:2px solid black;
+
+    border-radius:50%;
+
+    left:50%;
+
+    bottom:-25px;   /* 👈 changement ici */
+
+    transform:translateX(-50%);
+
+    cursor:grab;
+
+    z-index:10;
+
+}
+
+#contextMenu{
+    position:absolute;
+    display:none;
+    background:white;
+    border:1px solid #333;
+    padding:8px;
+    z-index:1000;
+    border-radius:6px;
+}
+
+#contextMenu button{
+    display:block;
+    width:120px;
+    margin:4px 0;
+    cursor:pointer;
+}
+
+.desk-block{
+    position:absolute;
+}
+
+.modal{
+
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+    z-index:9999;
+}
+
+
+.modal-content{
+    background:white;
+    width:400px;
+    padding:20px;
+    border-radius:10px;
+}
+
+
+#studentsInput{
+    width:100%;
+    height:200px;
+    margin-bottom:15px;
+}
+
+.student-label {
+    width: 100%; /* 👈 Prend 100% de la colonne de la grille */
+    height: 40px;
+    background: white;
+    border: 1px solid #999;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* margin-bottom a été supprimé, la grille gère l'espace */
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px; /* 👈 Légèrement réduit si les noms sont longs */
+    text-align: center;
+}
+
+.student-label {
+    position: relative;
+    z-index: 10; /* Assure que les étiquettes sont bien cliquables */
+    cursor: pointer;
+    user-select: none; /* Empêche la sélection du texte lors du drag */
+    margin-bottom: 5px; /* Ajoute un espace entre elles pour éviter les chevauchements */
+}
+/* ==========================================
+   LOGIQUE POUR LE MODE VUE PROF (MIROIR)
+   ========================================== */
+
+/* On fait pivoter de 180° le texte à l'intérieur du bureau */
+.element.studentDesk.teacher-view .desk-label {
+    transform: rotate(180deg);
+    transform-origin: center center;
+    transition: transform 0.3s ease; /* Petit effet fluide agréable */
+}
+
+/* Si un élève est en cours de déplacement (dragged) hors d'un bureau, 
+   on peut aussi forcer l'étiquette à tourner si nécessaire */
+.student-label.teacher-view {
+    transform: rotate(180deg);
+}
+
+/* ==========================================
+   STYLE SPÉCIFIQUE POUR L'EXPORTATION PDF 
+   ========================================== */
+@media print {
+    /* Force l'impression en mode Paysage et supprime les marges de la feuille */
+    @page {
+        size: landscape;
+        margin: 0; 
+    }
+
+    html {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background: white;
+        color: black;
+        margin: 0;
+        padding: 0;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden; /* Interdit strictement la création d'une 2ème page */
+        
+        /* 📐 🔥 NOUVEAU : On range le titre et le plan l'un sous l'autre proprement */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+    }
+
+    /* ✍️ 🔥 NOUVEAU : On écrase l'espace sous le titre uniquement pour le PDF */
+    h1 {
+        margin-top: 6mm !important;    /* Espace au-dessus du titre dans la feuille */
+        margin-bottom: 2mm !important; /* 👈 Espace sous le titre fortement réduit */
+        font-size: 26px !important;    /* Taille du titre légèrement optimisée */
+    }
+
+    /* Force le navigateur à imprimer les couleurs de fond (les bureaux) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Masquer absolument toute l'interface utilisateur */
+    .toolbar, #unassignedPanel, #contextMenu, .modal, .rotation-handle {
+        display: none !important;
+    }
+
+    .workspace {
+        /* 📐 🔥 MODIFICATION : Prends automatiquement 100% de la place restante sous le titre */
+        flex: 1 !important;
+        width: 100% !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    #classroom {
+        border: 2px solid black !important;
+        box-shadow: none !important;
+        position: relative !important;
+        page-break-inside: avoid;
+        
+        /* Zoom calibré pour remplir l'espace restant sans taper le bas de page */
+        transform: scale(1.12);
+        transform-origin: center center; 
+    }
+
+    /* 🎨 NOUVEAU : Réinitialiser les couleurs d'origine pour l'export PDF */
+    .studentDesk {
+        background-color: #8dc !important;
+    }
+    .teacherDesk {
+        background-color: #d88 !important;
+    }
+    .teacherBoard {
+        background-color: #333 !important;
+    }
+}
+
+/* ==========================================
+   INVERSION INDIVIDUELLE DU TEXTE
+   ========================================== */
+.element.studentDesk.text-flipped .desk-label {
+    transform: rotate(180deg);
+    transform-origin: center center;
+}
+
+/* ==========================================
+   EFFET DE SURVOL LORS DU GLISSER-DÉPOSER
+   ========================================== */
+.element.studentDesk.desk-highlight {
+    box-shadow: 0 0 0 4px #4CAF50 inset, 0 0 15px rgba(76, 175, 80, 0.8) !important;
+    transition: box-shadow 0.1s ease;
+    z-index: 50; /* S'assure qu'il passe au-dessus des autres bureaux */
+}
+
+.student-label-placeholder {
+    visibility: hidden;
+    pointer-events: none;
+}

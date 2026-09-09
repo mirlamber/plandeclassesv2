@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Plan de classe</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1 id="pageTitle">Plan de classe <span id="titleClassName"></span></h1>
+
+<div id="studentsModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Liste des élèves</h2>
+
+        <textarea id="studentsInput" placeholder="NOM Prénom"></textarea>
+        <button id="importStudentsBtn">Ajouter</button>
+        <button id="studentsCloseBtn">Fermer</button>
+    </div>
+
+</div>
+
+<div class="toolbar">
+    <div class="toolbar-row">
+        <input type="text" id="classNameInput" placeholder="Nom de la classe (ex: 6ème B)" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+        <button id="exportJson">📥 Exporter JSON</button>
+        <button id="exportPdf">📕 Exporter PDF</button>
+        <button id="triggerImportJson">📤 Charger JSON</button>
+        <input type="file" id="importJsonInput" accept=".json" style="display: none;">
+        <button id="importSimpleListBtn">📄 Importer Liste Simple</button>
+        <input type="file" id="simpleListInput" accept=".txt,.csv" style="display: none;">
+    </div>
+    
+    <div class="toolbar-row">
+        <button id="addDesk">➕ Ajouter un bureau</button>
+        <button id="lock">🔒 Verrouiller</button>
+        <button id="studentsBtn">Ajout d'élèves</button>
+        <button id="clearStudents">👥 Enlever tous</button>
+        <button id="toggleTeacherView" style="background-color: #4CAF50; color: white;">👨‍🏫 Mode Miroir (Vue Prof)</button>
+    </div>
+</div>
+
+
+<div class="workspace">
+    <div id="classroom">
+    </div>
+    <div id="unassignedPanel">
+        <h2>Non affecté</h2>
+        <div id="unassignedZone">
+        </div>
+    </div>
+</div>
+
+
+
+<div id="contextMenu">
+    <button id="editStudentLabel">✏️ Modifier</button>
+    <button id="deleteStudentLabel">🗑️ Supprimer</button>
+    <button id="changeDeskColor">🎨 Couleur</button>
+    <button id="removeStudent">❌ Retirer élève</button>
+    <button id="deleteElement">🗑️ Supprimer l'élément</button>
+    <button id="toggleDeskText">🔄 Inverser le texte</button>
+</div>
+
+<!-- Sélecteur de couleur masqué -->
+<input type="color" id="deskColorPicker" style="display: none;">
+
+
+<script src="script.js"></script>
+
+
+
+</body>
+</html>
