@@ -639,7 +639,7 @@ function startDragStudent(e) {
     studentOffsetX = e.clientX - rect.left;
     studentOffsetY = e.clientY - rect.top;
 
-    // Si l'étiquette provient de la zone "Non affecté", on laisse un espaceur invisible
+    // Espaceur pour conserver la place dans la zone non affecté
     if (draggedStudent.parentNode && draggedStudent.parentNode.id === "unassignedZone") {
         dragPlaceholder = document.createElement("div");
         dragPlaceholder.className = "student-label-placeholder";
@@ -649,8 +649,14 @@ function startDragStudent(e) {
     }
 
     draggedStudent.style.width = rect.width + "px";
-    draggedStudent.style.position = "absolute";
+    
+    // 📱 Passage en "fixed" pour éliminer le décalage sur iPad/Safari
+    draggedStudent.style.position = "fixed"; 
     draggedStudent.style.zIndex = 1000;
+
+    // Alignement immédiat sous le pointeur
+    draggedStudent.style.left = (e.clientX - studentOffsetX) + "px";
+    draggedStudent.style.top = (e.clientY - studentOffsetY) + "px";
 
     document.addEventListener("mousemove", moveStudent);
     document.addEventListener("mouseup", dropStudent);
