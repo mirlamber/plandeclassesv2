@@ -1240,34 +1240,32 @@ document.getElementById("deleteStudentLabel").onclick = function() {
 
 // Fonction pour éditer une étiquette
 function setupStudentLabelEvents(label) {
-    // Clic gauche : déplacement
-    label.addEventListener("mousedown", (e) => {
-        if (e.button === 2) return; // Bloque le glisser-déposer si c'est un clic droit
-        startDragStudent(e);
-    });
+    // 1. Déplacement de l'étiquette au clic enfoncé
+    label.addEventListener("mousedown", startDragStudent);
 
-    // Clic droit : ouvre le menu pour l'étiquette
-    label.addEventListener("contextmenu", (e) => {
-        e.preventDefault(); 
-        e.stopPropagation();
+    // 2. Menu contextuel au clic droit
+    label.addEventListener("contextmenu", e => {
+        e.preventDefault();
 
         currentStudentLabel = label;
         currentElement = null;
 
-        // Masquer les boutons réservés aux bureaux / éléments
-        document.getElementById("removeStudent").style.display = "none";
-        document.getElementById("deleteElement").style.display = "none";
-        document.getElementById("toggleDeskText").style.display = "none";
-        document.getElementById("changeDeskColor").style.display = "none"; // 👈 À rajouter dans le bloc contextmenu
-        document.getElementById("colorRed").style.display = "none";
-        document.getElementById("colorGreen").style.display = "none";
-        document.getElementById("colorYellow").style.display = "none";
-        document.getElementById("colorReset").style.display = "none";
-        // Afficher uniquement les boutons de l'étiquette
-        document.getElementById("editStudentLabel").style.display = "block";
-        document.getElementById("deleteStudentLabel").style.display = "block";
+        let contextMenu = document.getElementById("contextMenu");
+        if (!contextMenu) return;
 
-        // Afficher le menu à l'emplacement de la souris
+        // Afficher les boutons réservés aux étiquettes
+        ["editStudentLabel", "deleteStudentLabel"].forEach(id => {
+            let btn = document.getElementById(id);
+            if (btn) btn.style.display = "block";
+        });
+
+        // Masquer les boutons réservés aux bureaux et aux couleurs
+        ["deleteElement", "removeStudent", "toggleDeskText", "colorRed", "colorGreen", "colorYellow", "colorReset"].forEach(id => {
+            let btn = document.getElementById(id);
+            if (btn) btn.style.display = "none";
+        });
+
+        // Positionner et afficher le menu
         contextMenu.style.display = "block";
         contextMenu.style.left = e.pageX + "px";
         contextMenu.style.top = e.pageY + "px";
