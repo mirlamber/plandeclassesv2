@@ -894,17 +894,29 @@ classNameInput.addEventListener("input", function() {
 // ==========================================
 
 // EXPORT JSON
+// EXPORT JSON
 document.getElementById("exportJson").onclick = function() {
     let hasStudents = false;
     let className = classNameInput.value.trim();
     
+    // 👥 Récupération des étiquettes actuellement dans la zone "Non affecté"
+    let unassignedStudents = [];
+    document.querySelectorAll("#unassignedZone .student-label").forEach(label => {
+        unassignedStudents.push(label.textContent.trim());
+    });
+    
+    if (unassignedStudents.length > 0) {
+        hasStudents = true;
+    }
+
     let data = {
         className: className,
         classroomSize: {
             width: document.querySelector("#classroom").clientWidth,
             height: document.querySelector("#classroom").clientHeight
         },
-        elements: []
+        elements: [],
+        unassignedStudents: unassignedStudents // 👈 Sauvegarde des non affectés
     };
 
     document.querySelectorAll("#classroom .element").forEach(el => {
@@ -935,7 +947,7 @@ document.getElementById("exportJson").onclick = function() {
 
     // 🗓️ RÉCUPÉRATION DE LA DATE (Mois-Année)
     let d = new Date();
-    let month = String(d.getMonth() + 1).padStart(2, '0'); // Ajoute un 0 devant si < 10
+    let month = String(d.getMonth() + 1).padStart(2, '0');
     let year = d.getFullYear();
     let dateSuffix = `${month}-${year}`;
 
@@ -992,6 +1004,7 @@ document.getElementById("triggerImportJson").onclick = function() {
 };
 
 // Gestionnaire d'événement lorsque l'utilisateur sélectionne un fichier
+// Gestionnaire d'événement lorsque l'utilisateur sélectionne un fichier
 document.getElementById("importJsonInput").onchange = function(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -1000,6 +1013,7 @@ document.getElementById("importJsonInput").onchange = function(e) {
     reader.onload = function(event) {
         try {
             const data = JSON.parse(event.target.result);
+
             // 0. Restaurer le nom de la classe
             if (data.className) {
                 document.getElementById("classNameInput").value = data.className;
@@ -1008,11 +1022,28 @@ document.getElementById("importJsonInput").onchange = function(e) {
                 document.getElementById("classNameInput").value = "";
                 document.getElementById("titleClassName").textContent = "";
             }
-            // 1. Nettoyer la classe actuelle (effacer les bureaux, tableaux, prof)
+
+            // 1. Nettoyer la classe et la zone "Non affecté"
             const classroom = document.querySelector("#classroom");
             classroom.innerHTML = "";
 
-            // 2. Parcourir et recréer chaque élément sauvegardé
+            const unassignedZone = document.getElementById("unassignedZone");
+            unassignedZone.innerHTML = "";
+            students = [];
+
+            // 2. Restauration des étiquettes non affectées
+            if (data.unassignedStudents && Array.isArray(data.unassignedStudents)) {
+                data.unassignedStudents.forEach(studentText => {
+                    let newStudent = {
+                        fullName: studentText,
+                        label: studentText
+                    };
+                    students.push(newStudent);
+                    createNewStudentLabel(newStudent);
+                });
+            }
+
+            // 3. Parcourir et recréer chaque élément sauvegardé
             data.elements.forEach(item => {
                 let el = document.createElement("div");
                 el.style.position = "absolute";
@@ -1022,39 +1053,30 @@ document.getElementById("importJsonInput").onchange = function(e) {
                 el.style.transform = `rotate(${el.rotation}deg)`;
                 el.style.transformOrigin = "center center";
 
-                // Assigner la bonne classe CSS selon le type d'élément
                 if (item.type === "studentDesk") {
                     el.className = "element studentDesk";
                     
-                    // À insérer dans le "if (item.type === 'studentDesk')" de ton lecteur JSON :
                     if (item.textFlipped) {
                         el.classList.add("text-flipped");
                     }
 
-                    // Si un élève était sur ce bureau
                     if (item.student) {
                         el.innerHTML = `<div class="desk-label">${item.student}</div>`;
                         
-                        // Optionnel : On tente de chercher l'étiquette de l'élève dans la zone "Non affecté" pour la retirer
                         let labels = document.querySelectorAll("#unassignedZone .student-label");
                         for (let label of labels) {
                             if (label.textContent === item.student) {
-                                // On lie l'élément logiquement et on retire l'étiquette de la liste de droite
                                 el.assignedStudent = label; 
                                 label.remove();
                                 break;
                             }
                         }
                         
-                        // Si l'élève n'existait pas encore dans la liste (import d'un plan seul), on crée une fausse étiquette pour la logique interne
                         if (!el.assignedStudent) {
                             let fakeStudent = document.createElement("div");
-                            fakeStudent.className = "student-label"; // 👈 On ajoute la classe CSS
+                            fakeStudent.className = "student-label";
                             fakeStudent.textContent = item.student;
-                            
-                            // 👈 On attache les événements (Drag & Drop + Clic Droit)
                             setupStudentLabelEvents(fakeStudent); 
-                            
                             el.assignedStudent = fakeStudent;
                         }
 
@@ -1074,7 +1096,6 @@ document.getElementById("importJsonInput").onchange = function(e) {
                     el.style.backgroundColor = item.backgroundColor;
                 }
 
-                // 3. Réinjecter l'élément dans la classe et le rendre déplaçable
                 classroom.appendChild(el);
                 makeDraggable(el);
             });
@@ -1086,7 +1107,6 @@ document.getElementById("importJsonInput").onchange = function(e) {
             console.error(error);
         }
         
-        // Réinitialiser l'input pour pouvoir recharger le même fichier si besoin
         e.target.value = "";
     };
 
@@ -1235,6 +1255,7 @@ function setupStudentLabelEvents(label) {
         document.getElementById("removeStudent").style.display = "none";
         document.getElementById("deleteElement").style.display = "none";
         document.getElementById("toggleDeskText").style.display = "none";
+        document.getElementById("changeDeskColor").style.display = "none"; // 👈 À rajouter dans le bloc contextmenu
 
         // Afficher uniquement les boutons de l'étiquette
         document.getElementById("editStudentLabel").style.display = "block";
